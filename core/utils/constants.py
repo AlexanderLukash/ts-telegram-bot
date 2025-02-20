@@ -1,0 +1,3 @@
+CHAT_LIST_URI = "/api/v1/chats/"
+DEFAULT_LIMIT = 10
+DEFAULT_OFFSET = 0

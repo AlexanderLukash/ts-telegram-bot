@@ -1,0 +1,20 @@
+[tool.poetry]
+name = "ts-telegram-bot"
+version = "0.1.0"
+description = ""
+authors = ["AlexanderLukash <sashass20062727@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.13"
+aiogram = "^3.18.0"
+pydantic-settings = "^2.7.1"
+httpx = "^0.28.1"
+
+
+[tool.poetry.group.dev.dependencies]
+pre-commit = "^4.1.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
