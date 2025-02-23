@@ -34,7 +34,7 @@ async def set_chat_handler(message: Message, command: CommandObject):
             service = await request_container.get(BaseChatWebService)
         try:
             await service.add_listener(
-                telegram_chat_id=str(message.from_user.id),
+                telegram_chat_id=message.from_user.id,
                 chat_oid=chat_oid,
             )
             await message.answer(

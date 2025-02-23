@@ -9,6 +9,7 @@ from core.exceptions.chat import (
     ChatListRequestError,
     ChatListenersRequestError,
     AddChatListenersRequestError,
+    GetChatInfoRequestError,
 )
 from core.services.converters.chats import (
     convert_chat_response_to_chat_dto,
@@ -20,6 +21,7 @@ from core.utils.constants import (
     DEFAULT_OFFSET,
     CHAT_LISTENERS_URI,
     ADD_LISTENER_TO_CHAT_URI,
+    CHAT_INFO_URL,
 )
 
 
@@ -35,7 +37,10 @@ class BaseChatWebService(ABC):
     async def get_chat_listeners(self, chat_oid: str) -> list[ChatListenerDTO]: ...
 
     @abstractmethod
-    async def add_listener(self, telegram_chat_id: str, chat_oid: str) -> None: ...
+    async def add_listener(self, telegram_chat_id: int, chat_oid: str) -> None: ...
+
+    @abstractmethod
+    async def get_chat_info(self, chat_oid: str) -> ChatListItemDTO: ...
 
 
 @dataclass
@@ -81,7 +86,7 @@ class ChatWebService(BaseChatWebService):
             for listener_data in json_data
         ]
 
-    async def add_listener(self, telegram_chat_id: str, chat_oid: str) -> None:
+    async def add_listener(self, telegram_chat_id: int, chat_oid: str) -> None:
         response = await self.http_client.post(
             url=urljoin(
                 base=self.base_url,
@@ -97,3 +102,20 @@ class ChatWebService(BaseChatWebService):
                 status_code=response.status_code,
                 response_content=response.content.decode(),
             )
+
+    async def get_chat_info(self, chat_oid: str) -> ChatListItemDTO:
+        response = await self.http_client.get(
+            url=urljoin(
+                base=self.base_url,
+                url=CHAT_INFO_URL.format(chat_oid=chat_oid),
+            ),
+        )
+
+        if not response.is_success:
+            raise GetChatInfoRequestError(
+                status_code=response.status_code,
+                response_content=response.content.decode(),
+            )
+
+        json_data = response.json()
+        return convert_chat_response_to_chat_dto(chat_data=json_data)

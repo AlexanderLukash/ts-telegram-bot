@@ -23,11 +23,9 @@ class DefaultProvider(Provider):
             base_url=self.get_config().WEB_API_BASE_URL,
         )
 
-    @provide(scope=Scope.REQUEST)
+    @provide(scope=Scope.APP)
     def get_telegram_bot(self) -> Bot:
         return Bot(
             token=self.get_config().BOT_TOKEN,
-            properties=DefaultBotProperties(
-                parse_mode="HTML",
-            ),
+            default=DefaultBotProperties(parse_mode="HTML"),
         )

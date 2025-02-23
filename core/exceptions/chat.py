@@ -44,3 +44,10 @@ class AddChatListenersRequestError(BaseWebException):
     @property
     def message(self):
         return "Failed to add chat listener."
+
+
+@dataclass(frozen=True, eq=False)
+class GetChatInfoRequestError(BaseWebException):
+    @property
+    def message(self):
+        return "Failed to receive chat information."
