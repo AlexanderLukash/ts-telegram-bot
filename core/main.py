@@ -4,6 +4,7 @@ import betterlogging
 from aiogram import Bot, Dispatcher
 from aiogram.client.default import DefaultBotProperties
 
+
 from core.containers.factories import get_container
 from core.settings.config import Config
 from core.setup_handlers import register_routers

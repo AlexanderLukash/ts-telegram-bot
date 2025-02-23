@@ -1,0 +1,15 @@
+services:
+  bot_consumer:
+    build:
+      context: ..
+      dockerfile: Dockerfile
+
+    container_name: "bot-faststream"
+
+    ports:
+      - "5677:5678"
+
+    volumes:
+      - ..:/app/
+
+    command: "faststream run --factory core.consumers.main:get_app --reload"
