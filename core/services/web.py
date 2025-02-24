@@ -10,18 +10,20 @@ from core.exceptions.chat import (
     ChatListenersRequestError,
     AddChatListenersRequestError,
     GetChatInfoRequestError,
+    SendMessageToChatRequestError,
 )
 from core.services.converters.chats import (
     convert_chat_response_to_chat_dto,
     convert_chat_listener_response_to_listener_dto,
 )
-from core.utils.constants import (
+from core.settings.constants import (
     CHAT_LIST_URI,
     DEFAULT_LIMIT,
     DEFAULT_OFFSET,
     CHAT_LISTENERS_URI,
     ADD_LISTENER_TO_CHAT_URI,
     CHAT_INFO_URL,
+    SEND_MESSAGE_TO_CHAT_URI,
 )
 
 
@@ -37,10 +39,13 @@ class BaseChatWebService(ABC):
     async def get_chat_listeners(self, chat_oid: str) -> list[ChatListenerDTO]: ...
 
     @abstractmethod
-    async def add_listener(self, telegram_chat_id: int, chat_oid: str) -> None: ...
+    async def add_listener(self, telegram_chat_id: str, chat_oid: str) -> None: ...
 
     @abstractmethod
     async def get_chat_info(self, chat_oid: str) -> ChatListItemDTO: ...
+
+    @abstractmethod
+    async def send_message_to_chat(self, chat_oid: str, text: str) -> None: ...
 
 
 @dataclass
@@ -86,7 +91,7 @@ class ChatWebService(BaseChatWebService):
             for listener_data in json_data
         ]
 
-    async def add_listener(self, telegram_chat_id: int, chat_oid: str) -> None:
+    async def add_listener(self, telegram_chat_id: str, chat_oid: str) -> None:
         response = await self.http_client.post(
             url=urljoin(
                 base=self.base_url,
@@ -119,3 +124,20 @@ class ChatWebService(BaseChatWebService):
 
         json_data = response.json()
         return convert_chat_response_to_chat_dto(chat_data=json_data)
+
+    async def send_message_to_chat(self, chat_oid: str, text: str) -> None:
+        response = await self.http_client.post(
+            url=urljoin(
+                base=self.base_url,
+                url=SEND_MESSAGE_TO_CHAT_URI.format(chat_oid=chat_oid),
+            ),
+            json={
+                "text": text,
+            },
+        )
+
+        if not response.is_success:
+            raise SendMessageToChatRequestError(
+                status_code=response.status_code,
+                response_content=response.content.decode(),
+            )

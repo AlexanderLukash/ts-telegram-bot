@@ -51,3 +51,10 @@ class GetChatInfoRequestError(BaseWebException):
     @property
     def message(self):
         return "Failed to receive chat information."
+
+
+@dataclass(frozen=True, eq=False)
+class SendMessageToChatRequestError(BaseWebException):
+    @property
+    def message(self):
+        return "Failed to send a message to the chat."
