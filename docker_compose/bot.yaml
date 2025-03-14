@@ -9,6 +9,9 @@ services:
     volumes:
       - ..:/app/
 
+    env_file:
+      - ../.env
+
     ports:
       - "5679:5678"
 

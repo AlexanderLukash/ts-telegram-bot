@@ -4,6 +4,7 @@ import betterlogging
 from aiogram import Bot, Dispatcher
 
 from core.containers.factories import get_container
+from core.repositories.initialize import create_tables
 from core.setup_handlers import register_routers
 
 
@@ -27,4 +28,5 @@ async def main():
         bot = await request_container.get(Bot)
         dp = Dispatcher()
         register_routers(dp)
+        create_tables()
         await dp.start_polling(bot)
