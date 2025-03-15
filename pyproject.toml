@@ -13,6 +13,7 @@ httpx = "^0.28.1"
 dishka = "^1.4.2"
 faststream = {extras = ["cli", "kafka"], version = "^0.5.34"}
 watchfiles = "^1.0.4"
+aiosqlite = "^0.21.0"
 
 
 [tool.poetry.group.dev.dependencies]

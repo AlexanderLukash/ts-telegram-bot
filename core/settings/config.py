@@ -5,6 +5,7 @@ from pydantic_settings import BaseSettings
 
 class Config(BaseSettings):
     BOT_TOKEN: str = Field(alias="BOT_TOKEN")
+    TELEGRAM_GROUP_ID: str = Field(alias="TELEGRAM_GROUP_ID")
     WEB_API_BASE_URL: str = Field(
         alias="WEB_API_BASE_URL",
         default="http://localhost:8000",
@@ -13,6 +14,10 @@ class Config(BaseSettings):
     NEW_MESSAGE_TOPIC: str = Field(
         alias="NEW_MESSAGE_TOPIC",
         default="new-messages-topic",
+    )
+    NEW_CHAT_TOPIC: str = Field(
+        alias="NEW_CHAT_TOPIC",
+        default="new-chats-topic",
     )
     KAFKA_GROUP_ID: str = Field(alias="KAFKA_GROUP_ID", default="tg-bot")
     GREETING_TEXT: str = Field(

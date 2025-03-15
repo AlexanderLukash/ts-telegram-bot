@@ -2,7 +2,7 @@ from aiogram import Bot
 from faststream import Context
 from faststream.kafka import KafkaRouter
 
-from core.consumers.schemas import NewChatMessageSchema
+from core.consumers.schemas import NewChatMessageSchema, NewChatSchema
 from core.containers.factories import get_container
 from core.services.web import BaseChatWebService
 from core.settings.config import get_config
@@ -32,3 +32,20 @@ async def new_message_subscription_handler(
             )
 
         await bot.session.close()
+
+
+@router.subscriber(config.NEW_CHAT_TOPIC, group_id=config.KAFKA_GROUP_ID)
+async def new_chat_subscription_handler(
+    message: NewChatSchema,
+):
+    container = get_container()
+    async with container() as request_container:
+        service = await request_container.get(BaseChatWebService)
+        chat_info = await service.get_chat_info(chat_oid=message.chat_oid)
+
+        bot = await request_container.get(Bot)
+
+        await bot.create_forum_topic(
+            chat_id=config.TELEGRAM_GROUP_ID,
+            name=chat_info.title,
+        )

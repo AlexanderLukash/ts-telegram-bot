@@ -17,15 +17,19 @@ class DefaultProvider(Provider):
         return AsyncClient()
 
     @provide(scope=Scope.REQUEST)
-    def get_chats_web_service(self) -> BaseChatWebService:
+    def get_chats_web_service(
+        self,
+        config: Config,
+        http_client: AsyncClient,
+    ) -> BaseChatWebService:
         return ChatWebService(
-            http_client=self.get_http_client(),
-            base_url=self.get_config().WEB_API_BASE_URL,
+            http_client=http_client,
+            base_url=config.WEB_API_BASE_URL,
         )
 
     @provide(scope=Scope.APP)
-    def get_telegram_bot(self) -> Bot:
+    def get_telegram_bot(self, config: Config) -> Bot:
         return Bot(
-            token=self.get_config().BOT_TOKEN,
+            token=config.BOT_TOKEN,
             default=DefaultBotProperties(parse_mode="HTML"),
         )

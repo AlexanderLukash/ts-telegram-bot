@@ -12,4 +12,7 @@ services:
     volumes:
       - ..:/app/
 
+    env_file:
+      - ../.env
+
     command: "faststream run --factory core.consumers.main:get_app --reload"
