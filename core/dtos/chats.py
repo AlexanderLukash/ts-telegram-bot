@@ -14,5 +14,5 @@ class ChatListenerDTO(BaseModel):
 
 
 class ChatInfoDTO(BaseModel):
-    telegram_chat_id: str
+    telegram_chat_id: int
     web_chat_id: str

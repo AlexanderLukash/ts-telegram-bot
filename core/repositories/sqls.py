@@ -6,8 +6,6 @@ CREATE TABLE IF NOT EXISTS chat_web_mapping (
 );
 """
 ADD_NEW_CHAT_INFO = """
-INSERT INTO chat_web_mapping (web_chat_id, telegram_chat_id) VALUES (
-    {web_chat_id}, 
-    {telegram_chat_id},
-);
+INSERT INTO chat_web_mapping (web_chat_id, telegram_chat_id) 
+VALUES (?, ?) 
 """

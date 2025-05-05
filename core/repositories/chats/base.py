@@ -1,11 +1,13 @@
 from abc import ABC, abstractmethod
 
 from aiosqlite import connect
+from attr import dataclass
 
-from core.dtos.messages import ChatInfoDTO
+from core.dtos.chats import ChatInfoDTO
 from core.repositories.sqls import ADD_NEW_CHAT_INFO
 
 
+@dataclass(eq=False)
 class BaseChatRepository(ABC):
     @abstractmethod
     async def get_by_telegram_id(self, telegram_id: int) -> ChatInfoDTO: ...
@@ -17,6 +19,7 @@ class BaseChatRepository(ABC):
     async def add_chat(self, chat_info: ChatInfoDTO) -> ChatInfoDTO: ...
 
 
+@dataclass(eq=False)
 class SQLChatRepository(BaseChatRepository):
     database_url: str
 
@@ -26,13 +29,10 @@ class SQLChatRepository(BaseChatRepository):
 
     async def add_chat(self, chat_info: ChatInfoDTO) -> ChatInfoDTO:
         async with connect(self.database_url) as db:
-            row = await db.execute_insert(
+            await db.execute_insert(
                 ADD_NEW_CHAT_INFO,
                 (chat_info.web_chat_id, chat_info.telegram_chat_id),
             )
-            web_chat_id, telegram_chat_id = row
+            await db.commit()
 
-            return ChatInfoDTO(
-                web_chat_id=web_chat_id,
-                telegram_chat_id=telegram_chat_id,
-            )
+            return chat_info

@@ -4,6 +4,8 @@ from faststream.kafka import KafkaRouter
 
 from core.consumers.schemas import NewChatMessageSchema, NewChatSchema
 from core.containers.factories import get_container
+from core.dtos.chats import ChatInfoDTO
+from core.services.chats import ChatsService
 from core.services.web import BaseChatWebService
 from core.settings.config import get_config
 
@@ -27,6 +29,7 @@ async def new_message_subscription_handler(
 
         for listener in listeners:
             await bot.send_message(
+                message_thread_id=13,
                 chat_id=listener.oid,
                 text=f"Message from chat:\n<b>{chat_info.title}</b><blockquote>{message.message_text}</blockquote>",
             )
@@ -42,10 +45,17 @@ async def new_chat_subscription_handler(
     async with container() as request_container:
         service = await request_container.get(BaseChatWebService)
         chat_info = await service.get_chat_info(chat_oid=message.chat_oid)
-
+        chat_service = await request_container.get(ChatsService)
         bot = await request_container.get(Bot)
 
-        await bot.create_forum_topic(
+        topic = await bot.create_forum_topic(
             chat_id=config.TELEGRAM_GROUP_ID,
             name=chat_info.title,
         )
+        await chat_service.add_chat(
+            ChatInfoDTO(
+                web_chat_id=message.chat_oid,
+                telegram_chat_id=topic.message_thread_id,
+            ),
+        )
+        print(f"Forum topic created: {topic}")

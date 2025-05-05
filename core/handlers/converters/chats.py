@@ -1,4 +1,4 @@
-from core.dtos.messages import ChatListItemDTO
+from core.dtos.chats import ChatListItemDTO
 
 
 def convert_chat_dtos_to_message(chats: list[ChatListItemDTO]) -> str:

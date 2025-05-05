@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from core.dtos.messages import ChatListItemDTO, ChatListenerDTO
+from core.dtos.chats import ChatListItemDTO, ChatListenerDTO
 
 
 def convert_chat_response_to_chat_dto(chat_data: dict) -> ChatListItemDTO:
