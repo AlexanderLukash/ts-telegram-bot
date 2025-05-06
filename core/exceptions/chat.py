@@ -58,3 +58,23 @@ class SendMessageToChatRequestError(BaseWebException):
     @property
     def message(self):
         return "Failed to send a message to the chat."
+
+
+@dataclass(frozen=True, eq=False)
+class CharInfoNotFoundError(ApplicationException):
+    telegram_chat_id: str | None = None
+    web_chat_id: str | None = None
+
+    @property
+    def message(self):
+        return "Chat Info not found."
+
+
+@dataclass(frozen=True, eq=False)
+class ChatAlreadyExistsError(ApplicationException):
+    telegram_chat_id: str | None = None
+    web_chat_id: str | None = None
+
+    @property
+    def message(self):
+        return "Chat already exists."

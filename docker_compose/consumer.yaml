@@ -15,4 +15,4 @@ services:
     env_file:
       - ../.env
 
-    command: "faststream run --factory core.consumers.main:get_app --reload"
+    command: "debugpy --listen 5678 -m faststream run --factory core.consumers.main:get_app --reload"
