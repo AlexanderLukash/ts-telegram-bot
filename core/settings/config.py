@@ -19,13 +19,14 @@ class Config(BaseSettings):
         alias="NEW_CHAT_TOPIC",
         default="new-chats-topic",
     )
+    DELETE_CHAT_TOPIC: str = Field(
+        alias="DELETE_CHAT_TOPIC",
+        default="chat-deleted-topic",
+    )
     KAFKA_GROUP_ID: str = Field(alias="KAFKA_GROUP_ID", default="tg-bot")
     GREETING_TEXT: str = Field(
         alias="GREETING_TEXT",
-        default=(
-            "Welcome to a technical support chat, choose a chat to work with a client."
-            "Get a list of all chats: /chats"
-        ),
+        default=("New chat with a problem: <b>{problem}</b>."),
     )
     DATABASE_NAME: str = Field(alias="DATABASE_NAME", default="test.db")
 

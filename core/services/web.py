@@ -9,6 +9,7 @@ from core.exceptions.chat import (
     ChatListRequestError,
     ChatListenersRequestError,
     AddChatListenersRequestError,
+    DeleteChatRequestError,
     GetChatInfoRequestError,
     SendMessageToChatRequestError,
 )
@@ -23,6 +24,7 @@ from core.settings.constants import (
     CHAT_LISTENERS_URI,
     ADD_LISTENER_TO_CHAT_URI,
     CHAT_INFO_URL,
+    DELETE_CHAT_URI,
     SEND_MESSAGE_TO_CHAT_URI,
 )
 
@@ -45,7 +47,15 @@ class BaseChatWebService(ABC):
     async def get_chat_info(self, chat_oid: str) -> ChatListItemDTO: ...
 
     @abstractmethod
-    async def send_message_to_chat(self, chat_oid: str, text: str) -> None: ...
+    async def send_message_to_chat(
+        self,
+        chat_oid: str,
+        text: str,
+        source: str = "web",
+    ) -> None: ...
+
+    @abstractmethod
+    async def delete_chat(self, chat_oid: str) -> None: ...
 
 
 @dataclass
@@ -125,7 +135,12 @@ class ChatWebService(BaseChatWebService):
         json_data = response.json()
         return convert_chat_response_to_chat_dto(chat_data=json_data)
 
-    async def send_message_to_chat(self, chat_oid: str, text: str) -> None:
+    async def send_message_to_chat(
+        self,
+        chat_oid: str,
+        text: str,
+        source: str = "web",
+    ) -> None:
         response = await self.http_client.post(
             url=urljoin(
                 base=self.base_url,
@@ -133,11 +148,26 @@ class ChatWebService(BaseChatWebService):
             ),
             json={
                 "text": text,
+                "source": source,
             },
         )
 
         if not response.is_success:
             raise SendMessageToChatRequestError(
+                status_code=response.status_code,
+                response_content=response.content.decode(),
+            )
+
+    async def delete_chat(self, chat_oid: str) -> None:
+        response = await self.http_client.delete(
+            url=urljoin(
+                base=self.base_url,
+                url=DELETE_CHAT_URI.format(chat_oid=chat_oid),
+            ),
+        )
+
+        if not response.is_success:
+            raise DeleteChatRequestError(
                 status_code=response.status_code,
                 response_content=response.content.decode(),
             )

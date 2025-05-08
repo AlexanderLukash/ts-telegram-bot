@@ -27,3 +27,7 @@ bot-down:
 .PHONY: bot-logs
 bot-logs:
 	${DC} -f ${BOT_APP} logs -f
+
+.PHONY: all
+all:
+	${DC} -f ${CONSUMER_APP} -f ${BOT_APP} ${ENV} up --build -d

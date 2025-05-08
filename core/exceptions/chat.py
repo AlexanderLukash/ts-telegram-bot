@@ -61,6 +61,13 @@ class SendMessageToChatRequestError(BaseWebException):
 
 
 @dataclass(frozen=True, eq=False)
+class DeleteChatRequestError(BaseWebException):
+    @property
+    def message(self):
+        return "Failed to delete the chat."
+
+
+@dataclass(frozen=True, eq=False)
 class CharInfoNotFoundError(ApplicationException):
     telegram_chat_id: str | None = None
     web_chat_id: str | None = None
@@ -78,3 +85,28 @@ class ChatAlreadyExistsError(ApplicationException):
     @property
     def message(self):
         return "Chat already exists."
+
+
+@dataclass(frozen=True, eq=False)
+class ChatNotFoundByTelegramIDError(ApplicationException):
+    telegram_chat_id: str
+
+    @property
+    def message(self):
+        return f"Chat with telegram id {self.telegram_chat_id} not found."
+
+
+@dataclass(frozen=True, eq=False)
+class ChatNotFoundByWebIDError(ApplicationException):
+    web_chat_id: str
+
+    @property
+    def message(self):
+        return f"Chat with web id {self.web_chat_id} not found."
+
+
+@dataclass(frozen=True, eq=False)
+class ChatIsNotExistsError(ApplicationException):
+    @property
+    def message(self):
+        return "Chat does not exist."

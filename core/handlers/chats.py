@@ -1,49 +1,34 @@
 from aiogram import Router, F
-from aiogram.filters import Command, CommandObject
-from aiogram.fsm.context import FSMContext
+from aiogram.filters import Command
 from aiogram.types import Message, ReactionTypeEmoji
 
 from core.containers.factories import get_container
 from core.exceptions.base import ApplicationException
 from core.exceptions.chat import BaseWebException
-from core.handlers.converters.chats import convert_chat_dtos_to_message
+from core.handlers.filters import ThreadFilter
+from core.services.chats import ChatsService
 from core.services.web import BaseChatWebService
-from core.utils.states import SendMessageState
+
 
 router = Router()
 
 
-@router.message(Command("chats"))
-async def get_all_chats_handler(message: Message):
+@router.message(Command("close_chat"), ThreadFilter())
+async def close_chat_and_delete_handler(message: Message):
     container = get_container()
 
     async with container() as request_container:
-        service = await request_container.get(BaseChatWebService)
-        chats = await service.get_all_chats()
+        web_servise: BaseChatWebService = await request_container.get(
+            BaseChatWebService,
+        )
+        service: ChatsService = await request_container.get(ChatsService)
 
-    await message.answer(
-        text=convert_chat_dtos_to_message(chats=chats),
-    )
-
-
-@router.message(Command("set_chat"))
-async def set_chat_handler(message: Message, command: CommandObject, state: FSMContext):
-    container = get_container()
-
-    chat_oid: str = command.args
-    if chat_oid:
-        async with container() as request_container:
-            service = await request_container.get(BaseChatWebService)
         try:
-            await service.add_listener(
-                telegram_chat_id=str(message.from_user.id),
-                chat_oid=chat_oid,
+            chat_info = await service.get_chat_info_by_telegram_id(
+                telegram_chat_id=message.message_thread_id,
             )
-            await message.answer(
-                text="You have successfully connected to chat, start communication.",
-            )
-            await state.set_state(SendMessageState.active)
-            await state.update_data(chat_oid=chat_oid)
+
+            await web_servise.delete_chat(chat_oid=chat_info.web_chat_id)
         except BaseWebException as error:
             await message.answer(
                 text=error.error_text,
@@ -53,36 +38,55 @@ async def set_chat_handler(message: Message, command: CommandObject, state: FSMC
                 text=error.message,
             )
 
-    else:
-        await message.answer(
-            text="Please Provide Chat Oid. For example: /set_chat 123456",
-        )
+
+@router.message(Command("help"))
+async def help_command(message: Message):
+    help_text = """Available commands:
+/help - Show this help message.
+/close_chat - Close the current chat when the issue is resolved.
+"""
+
+    await message.answer(text=help_text)
 
 
-@router.message(Command("quit"))
-async def leave_chat_handler(message: Message, state: FSMContext):
-    await state.clear()
-    await message.answer(text="You have left the chat.")
+@router.message(F.text.startswith("/"))
+async def unknown_command(message: Message):
+    await message.answer(
+        text="Unknown command. Please use /help to see available commands.",
+    )
 
 
-@router.message(SendMessageState.active, F.text)
-async def send_message_handler(message: Message, state: FSMContext):
-    data = await state.get_data()
-    chat_oid = data.get("chat_oid")
+@router.message(ThreadFilter())
+async def handle_thread_message(message: Message):
+    if message.text is None:
+        return
+
+    if message.from_user and message.from_user.id == message.bot.id:
+        return
+
     container = get_container()
 
     async with container() as request_container:
-        service = await request_container.get(BaseChatWebService)
+        web_service = await request_container.get(BaseChatWebService)
+        servise = await request_container.get(ChatsService)
+
         try:
-            await service.send_message_to_chat(
-                chat_oid=chat_oid,
+            chat_info = await servise.get_chat_info_by_telegram_id(
+                message.message_thread_id,
+            )
+
+            await web_service.send_message_to_chat(
+                chat_oid=chat_info.web_chat_id,
                 text=message.text,
+                source="telegram",
             )
             await message.react([ReactionTypeEmoji(emoji="👍")])
+
         except BaseWebException as error:
             await message.answer(
                 text=error.error_text,
             )
+
         except ApplicationException as error:
             await message.answer(
                 text=error.message,
